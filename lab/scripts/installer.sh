@@ -2,6 +2,8 @@
 
 set -e
 
+ENVIRONMENT=${ENVIRONMENT:-"~/eks-workshop-aws"}
+
 # renovate: depName=kubernetes/kubernetes
 kubectl_version='1.30.3'
 
@@ -199,6 +201,6 @@ EOT
   sudo chmod +x /usr/local/bin/update-ide
 fi
 
-sudo mkdir -p /eks-workshop
+mkdir -p ~/eks-workshop
 
-sudo chown ${USER} /eks-workshop
+chown ${USER} ~/eks-workshop

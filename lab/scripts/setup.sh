@@ -2,6 +2,8 @@
 
 set -e
 
+ENVIRONMENT=${ENVIRONMENT:-"~/eks-workshop-aws"}
+
 if [[ ! -d "~/.bashrc.d" ]]; then
   mkdir -p ~/.bashrc.d
   
@@ -21,7 +23,7 @@ EOT
 
 touch ~/.bashrc.d/workshop-env.bash
 
-cat << EOT > /home/ec2-user/.bashrc.d/aliases.bash
+cat << EOT > ~/.bashrc.d/aliases.bash
 function prepare-environment() { 
   bash /usr/local/bin/reset-environment \$1
   exit_code=\$?
