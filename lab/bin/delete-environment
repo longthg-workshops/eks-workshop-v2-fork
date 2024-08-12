@@ -6,4 +6,4 @@ ENVIRONMENT=${ENVIRONMENT:-"${HOME}/eks-workshop-aws"}
 
 reset-environment
 
-kubectl delete -k ${ENVIRONMENT}/eks-workshop/manifests/base-application > /dev/null
+kubectl delete -k ${ENVIRONMENT}/environment/eks-workshop/manifests/base-application > /dev/null
