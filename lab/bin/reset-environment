@@ -2,8 +2,8 @@
 
 ENVIRONMENT=${ENVIRONMENT:-"${HOME}/eks-workshop-aws"}
 
-mkdir -p ${HOME}/environment/eks-workshop/logs
-log_file=${HOME}/environment/eks-workshop/logs/action-$(date +%s).log
+mkdir -p ${ENVIRONMENT}/environment/eks-workshop/logs
+log_file=${ENVIRONMENT}/environment/eks-workshop/logs/action-$(date +%s).log
 
 exec 7>&1
 
@@ -28,14 +28,14 @@ if [ -z "$EKS_DEFAULT_MNG_MIN" ]; then
   exit 1
 fi
 
-rm -f ${HOME}/.kube/config
+rm -f ${ENVIRONMENT}/.kube/config
 
 aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --alias default --user-alias default
 
 module=$1
 
-repository_path="${HOME}/environment/eks-workshop/repository"
-manifests_path="${HOME}/environment/eks-workshop/manifests"
+repository_path="${ENVIRONMENT}/environment/eks-workshop/repository"
+manifests_path="${ENVIRONMENT}/environment/eks-workshop/manifests"
 base_path="$manifests_path/base-application"
 
 set -Eeuo pipefail
@@ -49,9 +49,9 @@ catch() {
   exec 3<&-
 }
 
-mkdir -p ${HOME}/environment/eks-workshop
+mkdir -p ${ENVIRONMENT}/environment/eks-workshop
 
-rm -rf ${ENVIRONMENT}/environment/eks-workshop
+rm -rf ${HOME}/environment/eks-workshop
 
 rm -rf $manifests_path
 
@@ -59,7 +59,7 @@ REPOSITORY_OWNER=${REPOSITORY_OWNER:-"longthg-workshops"}
 REPOSITORY_NAME=${REPOSITORY_NAME:-"eks-workshop-v2-fork"}
 REPOSITORY_REF=${REPOSITORY_REF:-"wsl"}
 
-mkdir -p ${ENVIRONMENT}/environment/eks-workshop
+mkdir -p ${HOME}/environment/eks-workshop
 
 if [ ! -z "${REPOSITORY_REF}" ]; then
   rm -rf $repository_path
@@ -75,7 +75,7 @@ elif [ -d "/manifests" ]; then
   cp -R /manifests $manifests_path
 fi
 
-ln -s $manifests_path ${ENVIRONMENT}/environment/eks-workshop
+ln -s $manifests_path ${HOME}/environment/eks-workshop
 
 if [ ! -z "$module" ]; then
   ANALYTICS_ENDPOINT=${ANALYTICS_ENDPOINT:-""}
@@ -93,8 +93,8 @@ fi
 logmessage "Resetting the environment..."
 logmessage "Tip: Read the rest of the lab introduction while you wait!"
 
-if [ -f "${HOME}/environment/eks-workshop/hooks/cleanup.sh" ]; then
-  bash ${HOME}/environment/eks-workshop/hooks/cleanup.sh
+if [ -f "${ENVIRONMENT}/environment/eks-workshop/hooks/cleanup.sh" ]; then
+  bash ${ENVIRONMENT}/environment/eks-workshop/hooks/cleanup.sh
 fi
 
 kubectl delete pod load-generator --ignore-not-found
@@ -121,9 +121,9 @@ kubectl wait --for=condition=available --timeout=240s deployments -l app.kuberne
 kubectl wait --for=condition=Ready --timeout=240s pods -l app.kubernetes.io/created-by=eks-workshop -A
 
 # Addons
-rm -rf ${HOME}/environment/eks-workshop/terraform
-mkdir -p ${HOME}/environment/eks-workshop/terraform
-cp -R $manifests_path/.workshop/terraform/* ${HOME}/environment/eks-workshop/terraform
+rm -rf ${ENVIRONMENT}/environment/eks-workshop/terraform
+mkdir -p ${ENVIRONMENT}/environment/eks-workshop/terraform
+cp -R $manifests_path/.workshop/terraform/* ${ENVIRONMENT}/environment/eks-workshop/terraform
 
 export TF_VAR_eks_cluster_id="$EKS_CLUSTER_NAME"
 
@@ -131,26 +131,26 @@ RESOURCES_PRECREATED=${RESOURCES_PRECREATED:-"false"}
 
 logmessage "Cleaning up previous lab infrastructure..."
 
-tf_dir=$(realpath --relative-to="$PWD" 'eks-workshop/terraform')
-# tf_dir="${HOME}/environment/eks-workshop/terraform"
+tf_dir=$(realpath --relative-to="$PWD" "${ENVIRONMENT}/environment/eks-workshop/terraform")
+# tf_dir="${ENVIRONMENT}/environment/eks-workshop/terraform"
 
 terraform -chdir="$tf_dir" init -upgrade
 terraform -chdir="$tf_dir" destroy --auto-approve
 
-rm -rf ${HOME}/environment/eks-workshop/hooks
+rm -rf ${ENVIRONMENT}/environment/eks-workshop/hooks
 
 if [ ! -z "$module" ]; then
   module_path="$manifests_path/modules/$module"
 
   if [ -f "$module_path/.workshop/cleanup.sh" ]; then
-    mkdir -p ${HOME}/environment/eks-workshop/hooks
-    cp "$module_path/.workshop/cleanup.sh" ${HOME}/environment/eks-workshop/hooks
+    mkdir -p ${ENVIRONMENT}/environment/eks-workshop/hooks
+    cp "$module_path/.workshop/cleanup.sh" ${ENVIRONMENT}/environment/eks-workshop/hooks
   fi
 
   if [ -f "$module_path/.workshop/terraform/main.tf" ]; then
     logmessage "Creating infrastructure for next lab..."
 
-    cp -R $module_path/.workshop/terraform/* ${HOME}/environment/eks-workshop/terraform/lab
+    cp -R $module_path/.workshop/terraform/* ${ENVIRONMENT}/environment/eks-workshop/terraform/lab
 
     export TF_VAR_resources_precreated="$RESOURCES_PRECREATED"
 
@@ -160,10 +160,10 @@ if [ ! -z "$module" ]; then
     # This is the deprecated legacy code path that will be removed
     logmessage "Creating infrastructure for next lab..."
 
-    cp -R $module_path/.workshop/terraform/* ${HOME}/environment/eks-workshop/terraform
+    cp -R $module_path/.workshop/terraform/* ${ENVIRONMENT}/environment/eks-workshop/terraform
 
     if [ "$RESOURCES_PRECREATED" = "true" ]; then
-      rm -f ${HOME}/environment/eks-workshop/terraform/addon_infrastructure.tf
+      rm -f ${ENVIRONMENT}/environment/eks-workshop/terraform/addon_infrastructure.tf
     fi
 
     terraform -chdir="$tf_dir" init -upgrade
@@ -175,7 +175,7 @@ if [ ! -z "$module" ]; then
   fi
 fi
 
-terraform -chdir="$tf_dir" output -json | jq -r '.environment.value | select(. != null)' > ${HOME}/.bashrc.d/workshop-env.bash
+terraform -chdir="$tf_dir" output -json | jq -r '.environment.value | select(. != null)' > ${ENVIRONMENT}/.bashrc.d/workshop-env.bash
 
 # Node groups
 expected_size_config="$EKS_DEFAULT_MNG_MIN $EKS_DEFAULT_MNG_MAX $EKS_DEFAULT_MNG_DESIRED"
