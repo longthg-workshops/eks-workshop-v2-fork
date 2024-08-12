@@ -51,7 +51,7 @@ catch() {
 
 mkdir -p ${HOME}/environment/eks-workshop
 
-rm -f ${ENVIRONMENT}/environment/eks-workshop
+rm -rf ${ENVIRONMENT}/environment/eks-workshop
 
 rm -rf $manifests_path
 
