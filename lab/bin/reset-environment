@@ -175,7 +175,7 @@ if [ ! -z "$module" ]; then
   fi
 fi
 
-terraform -chdir="$tf_dir" output -json | jq -r '.environment.value | select(. != null)' > ${ENVIRONMENT}/.bashrc.d/workshop-env.bash
+terraform -chdir="$tf_dir" output -json | jq -r '.environment.value | select(. != null)' > ${HOME}/.bashrc.d/workshop-env.bash
 
 # Node groups
 expected_size_config="$EKS_DEFAULT_MNG_MIN $EKS_DEFAULT_MNG_MAX $EKS_DEFAULT_MNG_DESIRED"
