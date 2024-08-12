@@ -4,7 +4,7 @@ set -e
 
 logmessage "Cleaning up cluster access entries..."
 
-kubectl delete -k ~/environment/eks-workshop/modules/security/cam/rbac --ignore-not-found
+kubectl delete -k ${HOME}/environment/eks-workshop/modules/security/cam/rbac --ignore-not-found
 
 read_only_check=$(aws eks list-access-entries --cluster-name $EKS_CLUSTER_NAME --output text | grep $READ_ONLY_IAM_ROLE || true)
 

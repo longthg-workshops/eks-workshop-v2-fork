@@ -31,7 +31,7 @@ resource "local_file" "ssh_config" {
   content         = <<EOF
 Host git-codecommit.*.amazonaws.com
   User ${aws_iam_user.gitops.unique_id}
-  IdentityFile ~/.ssh/gitops_ssh.pem
+  IdentityFile ${HOME}/.ssh/gitops_ssh.pem
 EOF
   filename        = "/home/ec2-user/.ssh/config"
   file_permission = "0600"

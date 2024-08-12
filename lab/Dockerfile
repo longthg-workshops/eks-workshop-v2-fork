@@ -21,7 +21,7 @@ USER ec2-user
 
 COPY --chmod=755 scripts/setup.sh /tmp/setup.sh
 
-RUN mkdir -p ~/environment
+RUN mkdir -p ${HOME}/environment
 
 WORKDIR /home/ec2-user/environment
 

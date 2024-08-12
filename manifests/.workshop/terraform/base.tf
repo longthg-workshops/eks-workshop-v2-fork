@@ -23,7 +23,7 @@ terraform {
 terraform {
   backend "kubernetes" {
     secret_suffix = "state"
-    config_path   = "~/.kube/config"
+    config_path   = "${HOME}/.kube/config"
     namespace     = "kube-system"
   }
 }

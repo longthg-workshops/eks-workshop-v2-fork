@@ -7,7 +7,7 @@ export REPOSITORY_OWNER=${REPOSITORY_OWNER:-"longthg-workshops"}
 export REPOSITORY_NAME=${REPOSITORY_NAME:-"eks-workshop-v2-fork"}
 export REPOSITORY_REF=${REPOSITORY_REF:-"wsl"}
 export RESOURCES_PRECREATED="true"
-export ENVIRONMENT=${ENVIRONMENT:-"~/eks-workshop-aws"}
+export ENVIRONMENT=${ENVIRONMENT:-"${HOME}/eks-workshop-aws"}
 
 curl -fsSL https://raw.githubusercontent.com/${RepositoryOwner}/${RepositoryName}/${RepositoryRef}/lab/scripts/installer.sh | bash
 
