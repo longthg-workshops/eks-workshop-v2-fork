@@ -32,8 +32,9 @@ function prepare-environment() {
 function use-cluster() { bash /usr/local/bin/use-cluster \$1; source ~/.bashrc.d/env.bash; }
 EOT
 
-REPOSITORY_OWNER=${REPOSITORY_OWNER:-"aws-samples"}
-REPOSITORY_NAME=${REPOSITORY_NAME:-"eks-workshop-v2"}
+REPOSITORY_OWNER=${REPOSITORY_OWNER:-"longthg-workshops"}
+REPOSITORY_NAME=${REPOSITORY_NAME:-"eks-workshop-v2-fork"}
+REPOSITORY_REF=${REPOSITORY_REF:-"main"}
 
 if [ ! -z "$REPOSITORY_REF" ]; then
   cat << EOT > ~/.bashrc.d/repository.bash

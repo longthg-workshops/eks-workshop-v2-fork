@@ -53,7 +53,9 @@ rm -f /home/ec2-user/environment/eks-workshop
 
 rm -rf $manifests_path
 
-REPOSITORY_REF=${REPOSITORY_REF:-""}
+REPOSITORY_OWNER=${REPOSITORY_OWNER:-"longthg-workshops"}
+REPOSITORY_NAME=${REPOSITORY_NAME:-"eks-workshop-v2-fork"}
+REPOSITORY_REF=${REPOSITORY_REF:-"main"}
 
 if [ ! -z "${REPOSITORY_REF}" ]; then
   rm -rf $repository_path
