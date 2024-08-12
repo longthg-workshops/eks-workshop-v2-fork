@@ -201,6 +201,6 @@ EOT
   sudo chmod +x /usr/local/bin/update-ide
 fi
 
-mkdir -p ${HOME}/eks-workshop
+mkdir -p ${HOME}/environment/eks-workshop
 
-chown ${USER} ${HOME}/eks-workshop
+chown ${USER} ${HOME}/environment/eks-workshop
