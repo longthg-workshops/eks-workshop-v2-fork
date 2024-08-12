@@ -9,6 +9,6 @@ export REPOSITORY_REF=${REPOSITORY_REF:-"wsl"}
 export RESOURCES_PRECREATED="true"
 export ENVIRONMENT=${ENVIRONMENT:-"${HOME}/eks-workshop-aws"}
 
-curl -fsSL https://raw.githubusercontent.com/${RepositoryOwner}/${RepositoryName}/${RepositoryRef}/lab/scripts/installer.sh | bash
+curl -fsSL https://raw.githubusercontent.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}/${REPOSITORY_REF}/lab/scripts/installer.sh | bash
 
-sudo -E -H -u ec2-user bash -c "curl -fsSL https://raw.githubusercontent.com/${RepositoryOwner}/${RepositoryName}/${RepositoryRef}/lab/scripts/setup.sh | bash"
+sudo -E -H -u ec2-user bash -c "curl -fsSL https://raw.githubusercontent.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}/${REPOSITORY_REF}/lab/scripts/setup.sh | bash"

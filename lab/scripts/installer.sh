@@ -69,7 +69,7 @@ esac
 
 sudo apt install --quiet -y findutils jq tar gzip zsh git diffutils wget \
   tree unzip openssl gettext bash-completion python3 python3-pip \
-  netcat yum-utils
+  netcat
 
 pip3 install -q awscurl==0.28 urllib3==1.26.6
 
