@@ -131,7 +131,7 @@ RESOURCES_PRECREATED=${RESOURCES_PRECREATED:-"false"}
 
 logmessage "Cleaning up previous lab infrastructure..."
 
-tf_dir=$(realpath --relative-to="$PWD" 'eks-workshop/terraform')
+tf_dir=$(realpath --relative-to="$HOME" 'environment/eks-workshop/terraform')
 # tf_dir="${HOME}/environment/eks-workshop/terraform"
 
 terraform -chdir="$tf_dir" init -upgrade
