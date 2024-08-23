@@ -66,7 +66,7 @@ Parameters:
   RepositoryRef:
     Type: String
     Description: The Git reference to be used to bootstrap Cloud9
-    Default: "main"
+    Default: "cloud-ide"
 Conditions:
   ImportVPCIDNotEmpty: 
     Fn::Not:
