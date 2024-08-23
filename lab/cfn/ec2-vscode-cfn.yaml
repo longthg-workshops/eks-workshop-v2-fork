@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT-0 
 #------------------------------------------------------
 AWSTemplateFormatVersion: "2010-09-09"
-Description: deploy a vscode-server on an ec2 
+Description: Deploy a vscode-server on an ec2 
 #------------------------------------------------------
 # Mappings CloudFront PrefixListId 
 #------------------------------------------------------
@@ -19,14 +19,24 @@ Mappings:
 # Parameters
 #------------------------------------------------------
 Parameters:
-  VPCID: 
-    Description: imported vpc id
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names
     Type: String
-    Default: "" 
-  SubnetID:
-    Description: imported subnet id
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
     Type: String
-    Default: ""
+    Default: 10.192.0.0/16
+  PublicSubnetCIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
+    Type: String
+    Default: 10.192.10.0/24
+  PrivateSubnetCIDR:
+    Description: Please enter the IP range (CIDR notation) for the private subnet in the first Availability Zone
+    Type: String
+    Default: 10.192.20.0/24
+#------------------------------------------------------
+# Server params
+#------------------------------------------------------
   InstanceType:
     Description: WebServer EC2 instance type
     Type: String
@@ -48,6 +58,9 @@ Parameters:
     Type: String
     Description: origin request policy id
     Default: 216adef6-5c7f-47e4-b989-5492eafa07d3
+#------------------------------------------------------
+# Lab params
+#------------------------------------------------------
   ResourcesPrecreated:
     Type: String
     Description: Whether lab infrastructure has been pre-provisioned
@@ -71,21 +84,114 @@ Parameters:
     Type: String
     Description: Where to clone and run the repo
     Default: "${HOME}/eks-workshop-aws"
-Conditions:
-  ImportVPCIDNotEmpty: 
-    Fn::Not:
-      - Fn::Equals:
-          - Ref: VPCID
-          - ""
-  ImportSubnetIDNotEmpty: 
-    Fn::Not:
-      - Fn::Equals:
-          - Ref: SubnetID
-          - ""
+
+Resources:
+#------------------------------------------------------
+# VPC and Subnet
+#------------------------------------------------------
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: !Ref PublicSubnetCIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet
+
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs  '' ]
+      CidrBlock: !Ref PrivateSubnetCIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Subnet
+
+  NatGatewayEIP:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayEIP.AllocationId
+      SubnetId: !Ref PublicSubnet
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Routes
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet
+
+  PrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Routes (AZ1)
+
+  DefaultPrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  PrivateSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref PrivateSubnet
+
 #------------------------------------------------------
 # Security Group
 #------------------------------------------------------
-Resources:
   VSCodeServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Metadata:
@@ -97,11 +203,7 @@ Resources:
             reason: allow ingress from the cloudfront prefix list
     Properties:
       GroupDescription: allow ingress from cloudfront prefix list
-      VpcId:
-        Fn::If:
-          - ImportVPCIDNotEmpty
-          - Ref: VPCID
-          - Ref: AWS::NoValue 
+      VpcId: !Ref VPC
 
   VSCodeServerSecurityGroupIngress:
     Type: AWS::EC2::SecurityGroupIngress
@@ -168,15 +270,11 @@ Resources:
       IamInstanceProfile: !Ref InstanceProfile
       Tags:
         - Key: Name
-          Value: VSCodeServer 
+          Value: !Sub ${EnvironmentName}-vscode-instance
       NetworkInterfaces:
         - DeviceIndex: "0"
           AssociatePublicIpAddress: "true"
-          SubnetId:
-            Fn::If:
-              - ImportSubnetIDNotEmpty
-              - Ref: SubnetID
-              - Ref: AWS::NoValue 
+          SubnetId: !Ref PrivateSubnet
           GroupSet:
             - Fn::GetAtt:
                 - VSCodeServerSecurityGroup
@@ -268,7 +366,7 @@ Resources:
           TargetOriginId: !GetAtt VSCodeServer.PublicDnsName
           ViewerProtocolPolicy: allow-all
           OriginRequestPolicyId: !Ref OriginRequestPolicyId 
-          CachePolicyId: !Ref VSCodeServerCloudFrontCachePolicy 
+          CachePolicyId: !Ref VSCodeServerCloudFrontCachePolicy
 #------------------------------------------------------
 # Exported output
 #------------------------------------------------------ 
