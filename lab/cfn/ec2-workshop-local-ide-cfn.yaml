@@ -35,6 +35,12 @@ Parameters:
     Type: String
     Default: 10.192.20.0/24
 #------------------------------------------------------
+# Key pair params
+#------------------------------------------------------
+  FunctionArn:
+      Type: String
+      Description: The ARN of the lambda function that implements the custom resource
+#------------------------------------------------------
 # Server params
 #------------------------------------------------------
   InstanceType:
@@ -84,7 +90,6 @@ Parameters:
     Type: String
     Description: Where to clone and run the repo
     Default: "${HOME}/eks-workshop-aws"
-
 Resources:
 #------------------------------------------------------
 # VPC and Subnet
@@ -134,18 +139,6 @@ Resources:
         - Key: Name
           Value: !Sub ${EnvironmentName} Private Subnet
 
-  NatGatewayEIP:
-    Type: AWS::EC2::EIP
-    DependsOn: InternetGatewayAttachment
-    Properties:
-      Domain: vpc
-
-  NatGateway:
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt NatGatewayEIP.AllocationId
-      SubnetId: !Ref PublicSubnet
-
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -168,27 +161,6 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnet
 
-  PrivateRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName} Private Routes (AZ1)
-
-  DefaultPrivateRoute:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref PrivateRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NatGateway
-
-  PrivateSubnetRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref PrivateRouteTable
-      SubnetId: !Ref PrivateSubnet
-
 #------------------------------------------------------
 # Security Group
 #------------------------------------------------------
@@ -197,8 +169,6 @@ Resources:
     Metadata:
       cfn_nag:
         rules_to_suppress:
-          - id: W40
-            reason: allow ingress from the cloudfront prefix list
           - id: W5
             reason: allow ingress from the cloudfront prefix list
     Properties:
@@ -208,14 +178,14 @@ Resources:
   VSCodeServerSecurityGroupIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      Description: open port 8080 for the cloudfront prefix list
+      Description: open port 22 for ssh
       GroupId: 
         Fn::GetAtt:
           - VSCodeServerSecurityGroup
           - GroupId
       IpProtocol: tcp
-      FromPort: 8080
-      ToPort: 8080
+      FromPort: 22
+      ToPort: 22
       SourcePrefixListId:
         Fn::FindInMap:
           - CloudFrontPrefixListIdMappings
@@ -255,6 +225,15 @@ Resources:
       Roles:
         - Ref: VSCodeServerIAMRole
 #------------------------------------------------------
+# Key pair for VSCode Server
+#------------------------------------------------------
+  Ec2VSCKeyPair:
+    Type: Custom::CreateSSHKey
+    Version: "1.0"
+    Properties:
+      ServiceToken: !Ref FunctionArn
+      KeyName: ${EnvironmentName}-vscode-keypair
+#------------------------------------------------------
 # EC2 Instance for VSCode Server
 #------------------------------------------------------
   VSCodeServer:
@@ -262,19 +241,20 @@ Resources:
     Metadata:
       cfn_nag:
         rules_to_suppress:
-          - id: W40
+          - id: W5
             reason: allow tcp 8080 from the cloudfront prefix list
     Properties:
       ImageId: !Ref LatestAmiId
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref InstanceProfile
+      KeyName: ${EnvironmentName}-vscode-keypair 
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName}-vscode-instance
       NetworkInterfaces:
         - DeviceIndex: "0"
           AssociatePublicIpAddress: "true"
-          SubnetId: !Ref PrivateSubnet
+          SubnetId: !Ref PublicSubnet
           GroupSet:
             - Fn::GetAtt:
                 - VSCodeServerSecurityGroup
@@ -305,17 +285,10 @@ Resources:
 # Exported output
 #------------------------------------------------------ 
 Outputs:
-  VSCodeServerCloudFrontDomainName:
-    Value: 
-      !Sub 
-        - "https://${domain}"
-        - { domain: !GetAtt VSCodeServerCloudFront.DomainName }
+  VSCodeServerPublicIP:
+    Value: !GetAtt VSCodeServer.PublicIp
     Export:
-      Name: !Sub ${AWS::StackName}-domain-name
-  VSCodeServerPrivateIP:
-    Value: !GetAtt VSCodeServer.PrivateIp
-    Export:
-      Name: !Sub ${AWS::StackName}-code-server-private-ip
+      Name: !Sub ${AWS::StackName}-code-server-public-ip
   VSCodeServerRoleARN:
     Value: !GetAtt VSCodeServerIAMRole.Arn
     Export:

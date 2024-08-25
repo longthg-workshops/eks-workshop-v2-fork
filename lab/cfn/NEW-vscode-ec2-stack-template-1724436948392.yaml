@@ -1,0 +1,405 @@
+---
+Metadata:
+  TemplateId: "arn:aws:cloudformation:us-west-2:654654588539:generatedTemplate/da963d59-f44c-42b5-bacd-616f3b13658b"
+Resources:
+  EC2VolumeAttachment00vol0eaa7233ebeb4926500PFXMW:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::VolumeAttachment"
+    DeletionPolicy: "Delete"
+    Properties:
+      InstanceId: "i-043f764aac9a82a6d"
+      VolumeId: "vol-0eaa7233ebeb49265"
+      Device: "/dev/sda1"
+  EC2KeyPair00keypair100P94DO:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::KeyPair"
+    DeletionPolicy: "Delete"
+    Properties:
+      KeyName: "key-pair-1"
+      KeyType: "rsa"
+      PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCgcmYheHdSFx/vXnNBRUJPBsXi8rKoziFk7V3GJTyLu2BkmlR1GaEFAKZGvMrpwRs1EF/Wo1mPnf8xP2y7l+C4kmJ58sQ1ACCv4hOE1E+upVT1MExPr975wJllxGryhvutrK9SKPQrqPKEIMsfqgpFYudvTCpGs/2pNvIm0fHIAFOpLCzUfQG0SS0CpeTeCbmyk+Hv4trpkrZdsFzJclkRzlHGjMW93KHZwdHNIYZF8DOMbj546mEBQLmUlr0IK67ZpYVsh2pelU5X8OiwYNk+SpWTyby64eTlz0dTIb47DB4gp0gnMiAl1ix4aamZP1229aUPPxCz6gm+JNWZD4aL\
+        \ key-pair-1\n"
+      Tags: []
+  EC2VPCDHCPOptionsAssociation00vpc029cf18305985373300n1bOu:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::VPCDHCPOptionsAssociation"
+    DeletionPolicy: "Delete"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC00vpc029cf18305985373300Ton3W"
+      DhcpOptionsId:
+        Ref: "EC2DHCPOptions00dopt02a7376b99666d9e8000sY2S"
+  EC2SecurityGroup00sg0370622fd8a034afa00OxBiz:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SecurityGroup"
+    DeletionPolicy: "Delete"
+    Properties:
+      GroupDescription: "Allow access to vscode ec2 instance"
+      GroupName: "vscode-ec2-access"
+      VpcId:
+        Ref: "EC2VPC00vpc029cf18305985373300Ton3W"
+      SecurityGroupIngress:
+      - CidrIp: "0.0.0.0/0"
+        IpProtocol: "tcp"
+        FromPort: 22
+        ToPort: 22
+      SecurityGroupEgress:
+      - CidrIp: "0.0.0.0/0"
+        IpProtocol: "-1"
+        FromPort: -1
+        ToPort: -1
+  EC2SubnetNetworkAclAssociation00aclassoc0645ffd51fef4031700q0EBH:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    DeletionPolicy: "Delete"
+    Properties:
+      NetworkAclId:
+        Ref: "EC2NetworkAcl00acl0df2a80d9f3c097f200RRWmB"
+      SubnetId:
+        Ref: "EC2Subnet00subnet03eae26ce369d1fa300EPLgg"
+  EC2VPC00vpc029cf18305985373300Ton3W:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::VPC"
+    DeletionPolicy: "Delete"
+    Properties:
+      CidrBlock: "10.192.0.0/24"
+      EnableDnsSupport: true
+      InstanceTenancy: "default"
+      EnableDnsHostnames: true
+      Tags:
+      - Value: "vscode-ec2-project-lhg-vpc"
+        Key: "Name"
+      - Value: "eks-workshop"
+        Key: "workshop"
+      - Value: "workshop"
+        Key: "scope"
+  EC2SecurityGroup00sg04112abfb49aec42700BSRQI:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SecurityGroup"
+    DeletionPolicy: "Delete"
+    Properties:
+      GroupDescription: "default VPC security group"
+      GroupName: "default"
+      VpcId:
+        Ref: "EC2VPC00vpc029cf18305985373300Ton3W"
+      SecurityGroupIngress:
+      - IpProtocol: "-1"
+        FromPort: -1
+        SourceSecurityGroupId:
+          Fn::GetAtt:
+          - "EC2VPC00vpc029cf18305985373300Ton3W"
+          - "DefaultSecurityGroup"
+        ToPort: -1
+        SourceSecurityGroupOwnerId: "654654588539"
+      SecurityGroupEgress:
+      - CidrIp: "0.0.0.0/0"
+        IpProtocol: "-1"
+        FromPort: -1
+        ToPort: -1
+  EC2Volume00vol0eaa7233ebeb4926500e70cM:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Volume"
+    DeletionPolicy: "Delete"
+    Properties:
+      MultiAttachEnabled: false
+      SnapshotId: "snap-0e5588bd53af1ff2c"
+      VolumeType: "gp2"
+      Encrypted: false
+      Size: 8
+      AutoEnableIO: true
+      AvailabilityZone: "us-west-2a"
+      Iops: 100
+      Tags: []
+  EC2Subnet00subnet03eae26ce369d1fa300EPLgg:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Delete"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC00vpc029cf18305985373300Ton3W"
+      MapPublicIpOnLaunch: false
+      EnableDns64: false
+      AvailabilityZoneId: "usw2-az2"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: "10.192.0.128/25"
+      Ipv6Native: false
+      Tags:
+      - Value: "vscode-ec2-project-lhg-subnet-private1-us-west-2a"
+        Key: "Name"
+      - Value: "eks-workshop"
+        Key: "workshop"
+      - Value: "workshop"
+        Key: "scope"
+  EC2InternetGateway00igw0ce805f5b99dc901600ZfhHY:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::InternetGateway"
+    DeletionPolicy: "Delete"
+    Properties:
+      Tags:
+      - Value: "vscode-ec2-project-lhg-igw"
+        Key: "Name"
+      - Value: "eks-workshop"
+        Key: "workshop"
+      - Value: "workshop"
+        Key: "scope"
+  EC2Subnet00subnet0f511caad05dd956700Skw8p:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Delete"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC00vpc029cf18305985373300Ton3W"
+      MapPublicIpOnLaunch: false
+      EnableDns64: false
+      AvailabilityZoneId: "usw2-az2"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: "10.192.0.0/25"
+      Ipv6Native: false
+      Tags:
+      - Value: "workshop"
+        Key: "scope"
+      - Value: "vscode-ec2-project-lhg-subnet-public1-us-west-2a"
+        Key: "Name"
+      - Value: "eks-workshop"
+        Key: "workshop"
+  EC2RouteTable00rtb0c2e46ab17e7c66e300fGOMh:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::RouteTable"
+    DeletionPolicy: "Delete"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC00vpc029cf18305985373300Ton3W"
+  Route53ResolverResolverRuleAssociation00rslvrautodefinedassocvpc029cf183059853733internetresolver00ntvbp:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::Route53Resolver::ResolverRuleAssociation"
+    DeletionPolicy: "Delete"
+    Properties:
+      VPCId:
+        Ref: "EC2VPC00vpc029cf18305985373300Ton3W"
+      ResolverRuleId: "rslvr-autodefined-rr-internet-resolver"
+      Name: "System Rule Association"
+  EC2SubnetRouteTableAssociation00rtbassoc0d6fb6066c87bdbb600Bvvwl:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DeletionPolicy: "Delete"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTable00rtb0679e4f106b0de93d00NKoe1"
+      SubnetId:
+        Ref: "EC2Subnet00subnet0f511caad05dd956700Skw8p"
+  EC2NetworkAcl00acl0df2a80d9f3c097f200RRWmB:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::NetworkAcl"
+    DeletionPolicy: "Delete"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC00vpc029cf18305985373300Ton3W"
+      Tags: []
+  EC2RouteTable00rtb0629b86b5012cc558004ruxB:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::RouteTable"
+    DeletionPolicy: "Delete"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC00vpc029cf18305985373300Ton3W"
+      Tags:
+      - Value: "vscode-ec2-project-lhg-rtb-private1-us-west-2a"
+        Key: "Name"
+      - Value: "workshop"
+        Key: "scope"
+      - Value: "eks-workshop"
+        Key: "workshop"
+  EC2DHCPOptions00dopt02a7376b99666d9e8000sY2S:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::DHCPOptions"
+    DeletionPolicy: "Delete"
+    Properties:
+      DomainName: "us-west-2.compute.internal"
+      DomainNameServers:
+      - "AmazonProvidedDNS"
+      Tags: []
+  EC2Route00rtb0679e4f106b0de93d00YKmSB:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Route"
+    DeletionPolicy: "Delete"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTable00rtb0679e4f106b0de93d00NKoe1"
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId:
+        Ref: "EC2InternetGateway00igw0ce805f5b99dc901600ZfhHY"
+      VpcEndpointId: "igw-0ce805f5b99dc9016"
+  EC2Route00rtb0679e4f106b0de93d0045B9Y:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Route"
+    DeletionPolicy: "Delete"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTable00rtb0679e4f106b0de93d00NKoe1"
+      DestinationCidrBlock:
+        Fn::GetAtt:
+        - "EC2VPC00vpc029cf18305985373300Ton3W"
+        - "CidrBlock"
+      GatewayId: "local"
+      VpcEndpointId: "local"
+  EC2NetworkInterface00eni0474e73866d5e184a00uHUmM:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::NetworkInterface"
+    DeletionPolicy: "Delete"
+    Properties:
+      Description: ""
+      PrivateIpAddress: "10.192.0.52"
+      PrivateIpAddresses:
+      - PrivateIpAddress: "10.192.0.52"
+        Primary: true
+      SecondaryPrivateIpAddressCount: 0
+      Ipv6PrefixCount: 0
+      Ipv4Prefixes: []
+      Ipv4PrefixCount: 0
+      GroupSet:
+      - "sg-0370622fd8a034afa"
+      Ipv6Prefixes: []
+      SubnetId:
+        Ref: "EC2Subnet00subnet0f511caad05dd956700Skw8p"
+      SourceDestCheck: true
+      InterfaceType: "interface"
+      Tags: []
+  EC2SubnetRouteTableAssociation00rtbassoc0ae68c88e6daf921100TQW9V:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DeletionPolicy: "Delete"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTable00rtb0629b86b5012cc558004ruxB"
+      SubnetId:
+        Ref: "EC2Subnet00subnet03eae26ce369d1fa300EPLgg"
+  EC2NetworkInterfaceAttachment00eniattach02fd1b72216dc45f800X25fn:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::NetworkInterfaceAttachment"
+    DeletionPolicy: "Delete"
+    Properties:
+      NetworkInterfaceId: "eni-0474e73866d5e184a"
+      InstanceId: "i-043f764aac9a82a6d"
+      DeviceIndex: "0"
+      DeleteOnTermination: true
+  EC2Route00rtb0c2e46ab17e7c66e300QBTHM:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Route"
+    DeletionPolicy: "Delete"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTable00rtb0c2e46ab17e7c66e300fGOMh"
+      DestinationCidrBlock:
+        Fn::GetAtt:
+        - "EC2VPC00vpc029cf18305985373300Ton3W"
+        - "CidrBlock"
+      GatewayId: "local"
+      VpcEndpointId: "local"
+  EC2Route00rtb0629b86b5012cc55800jnkee:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Route"
+    DeletionPolicy: "Delete"
+    Properties:
+      RouteTableId:
+        Ref: "EC2RouteTable00rtb0629b86b5012cc558004ruxB"
+      DestinationCidrBlock:
+        Fn::GetAtt:
+        - "EC2VPC00vpc029cf18305985373300Ton3W"
+        - "CidrBlock"
+      GatewayId: "local"
+      VpcEndpointId: "local"
+  EC2SubnetNetworkAclAssociation00aclassoc0b590e7b8165ed916006Coxg:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    DeletionPolicy: "Delete"
+    Properties:
+      NetworkAclId:
+        Ref: "EC2NetworkAcl00acl0df2a80d9f3c097f200RRWmB"
+      SubnetId:
+        Ref: "EC2Subnet00subnet0f511caad05dd956700Skw8p"
+  EC2RouteTable00rtb0679e4f106b0de93d00NKoe1:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::RouteTable"
+    DeletionPolicy: "Delete"
+    Properties:
+      VpcId:
+        Ref: "EC2VPC00vpc029cf18305985373300Ton3W"
+      Tags:
+      - Value: "workshop"
+        Key: "scope"
+      - Value: "eks-workshop"
+        Key: "workshop"
+      - Value: "vscode-ec2-project-lhg-rtb-public"
+        Key: "Name"
+  EC2Instance00i043f764aac9a82a6d00qtecm:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Instance"
+    DeletionPolicy: "Delete"
+    Properties:
+      Tenancy: "default"
+      SecurityGroups:
+      - "vscode-ec2-access"
+      PrivateIpAddress: "10.192.0.52"
+      InstanceInitiatedShutdownBehavior: "stop"
+      CpuOptions:
+        ThreadsPerCore: 1
+        CoreCount: 1
+      BlockDeviceMappings:
+      - Ebs:
+          SnapshotId: "snap-0e5588bd53af1ff2c"
+          VolumeType: "gp2"
+          Iops: 100
+          VolumeSize: 8
+          Encrypted: false
+          DeleteOnTermination: true
+        DeviceName: "/dev/sda1"
+      AvailabilityZone: "us-west-2a"
+      PrivateDnsNameOptions:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      SubnetId:
+        Ref: "EC2Subnet00subnet0f511caad05dd956700Skw8p"
+      SecurityGroupIds:
+      - "sg-0370622fd8a034afa"
+      EbsOptimized: false
+      DisableApiTermination: false
+      KeyName: "key-pair-1"
+      SourceDestCheck: true
+      Volumes:
+      - VolumeId: "vol-0eaa7233ebeb49265"
+        Device: "/dev/sda1"
+      PlacementGroupName: ""
+      VpcId: "vpc-029cf183059853733"
+      State:
+        Code: "16"
+        Name: "running"
+      NetworkInterfaces:
+      - PrivateIpAddresses:
+        - PrivateIpAddress: "10.192.0.52"
+          Primary: true
+        SecondaryPrivateIpAddressCount: 0
+        DeviceIndex: "0"
+        GroupSet:
+        - Ref: "EC2SecurityGroup00sg0370622fd8a034afa00OxBiz"
+        Ipv6Addresses: []
+        SubnetId:
+          Ref: "EC2Subnet00subnet0f511caad05dd956700Skw8p"
+        AssociatePublicIpAddress: true
+        NetworkInterfaceId:
+          Ref: "EC2NetworkInterface00eni0474e73866d5e184a00uHUmM"
+        DeleteOnTermination: true
+      ImageId: "ami-0075013580f6322a1"
+      InstanceType: "t2.micro"
+      Monitoring: false
+      Tags:
+      - Value: "VSCode-EC2-instance"
+        Key: "Name"
+      CreditSpecification:
+        CPUCredits: "standard"
