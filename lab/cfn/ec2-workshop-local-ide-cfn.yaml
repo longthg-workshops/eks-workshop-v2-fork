@@ -5,17 +5,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Deploy a vscode-server on an ec2 
 #------------------------------------------------------
-# Mappings CloudFront PrefixListId 
-#------------------------------------------------------
-Mappings: 
-  CloudFrontPrefixListIdMappings:
-    us-west-2:
-      PrefixListId: "pl-82a045eb"
-    us-east-1: 
-      PrefixListId: "pl-3b927c52"
-    ap-southeast-1:
-      PrefixListId: "pl-31a34658"
-#------------------------------------------------------
 # Parameters
 #------------------------------------------------------
 Parameters:
