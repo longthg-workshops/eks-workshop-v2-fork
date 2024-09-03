@@ -37,9 +37,9 @@ Parameters:
 #------------------------------------------------------
 # Key pair params
 #------------------------------------------------------
-  FunctionArn:
-      Type: String
-      Description: The ARN of the lambda function that implements the custom resource
+  SshKeyName:
+    Type: String
+    Description: The name of the SSH Key
 #------------------------------------------------------
 # Server params
 #------------------------------------------------------
@@ -225,15 +225,6 @@ Resources:
       Roles:
         - Ref: VSCodeServerIAMRole
 #------------------------------------------------------
-# Key pair for VSCode Server
-#------------------------------------------------------
-  Ec2VSCKeyPair:
-    Type: Custom::CreateSSHKey
-    Version: "1.0"
-    Properties:
-      ServiceToken: !Ref FunctionArn
-      KeyName: ${EnvironmentName}-vscode-keypair
-#------------------------------------------------------
 # EC2 Instance for VSCode Server
 #------------------------------------------------------
   VSCodeServer:
@@ -247,7 +238,7 @@ Resources:
       ImageId: !Ref LatestAmiId
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref InstanceProfile
-      KeyName: ${EnvironmentName}-vscode-keypair 
+      KeyName: !Sub ${SshKeyName}
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName}-vscode-instance
