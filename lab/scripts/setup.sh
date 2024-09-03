@@ -36,7 +36,7 @@ EOT
 
 REPOSITORY_OWNER=${REPOSITORY_OWNER:-"longthg-workshops"}
 REPOSITORY_NAME=${REPOSITORY_NAME:-"eks-workshop-v2-fork"}
-REPOSITORY_REF=${REPOSITORY_REF:-"wsl"}
+REPOSITORY_REF=${REPOSITORY_REF:-"cloud-ide"}
 
 if [ ! -z "$REPOSITORY_REF" ]; then
   cat << EOT > ${HOME}/.bashrc.d/repository.bash
