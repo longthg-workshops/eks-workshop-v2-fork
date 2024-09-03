@@ -186,11 +186,7 @@ Resources:
       IpProtocol: tcp
       FromPort: 22
       ToPort: 22
-      SourcePrefixListId:
-        Fn::FindInMap:
-          - CloudFrontPrefixListIdMappings
-          - Ref: AWS::Region
-          - PrefixListId
+      CidrIp: 0.0.0.0/0
 
   VSCodeServerSecurityGroupEgress:
     Type: AWS::EC2::SecurityGroupEgress
