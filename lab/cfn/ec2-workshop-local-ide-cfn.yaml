@@ -242,13 +242,13 @@ Resources:
             - |
               #!/bin/bash
               AWS_REGION="${AWS::Region}"
-              REPOSITORY_OWNER="${RepositoryOwner}"
-              REPOSITORY_NAME="${RepositoryName}"
-              REPOSITORY_REF="${RepositoryRef}"
-              RESOURCES_PRECREATED="${ResourcesPrecreated}"
-              ENVIRONMENT=${LocalFolder}
-              curl -fsSL https://raw.githubusercontent.com/${RepositoryOwner}/${RepositoryName}/${RepositoryRef}/lab/scripts/installer.sh | bash
-              sudo -E -H -u ec2-user bash -c "curl -fsSL https://raw.githubusercontent.com/${RepositoryOwner}/${RepositoryName}/${RepositoryRef}/lab/scripts/setup.sh | bash"
+              REPOSITORY_OWNER="${REPOSITORY_OWNER}"
+              REPOSITORY_NAME="${REPOSITORY_NAME}"
+              REPOSITORY_REF="${REPOSITORY_REF}"
+              RESOURCES_PRECREATED="${RESOURCES_PRECREATED}"
+              ENVIRONMENT=${LOCAL}
+              curl -fsSL https://raw.githubusercontent.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}/${REPOSITORY_REF}/lab/scripts/installer.sh | bash
+              sudo -E -H -u ec2-user bash -c "curl -fsSL https://raw.githubusercontent.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}/${REPOSITORY_REF}/lab/scripts/setup.sh | bash"
               curl -fOL https://github.com/coder/code-server/releases/download/v${VERSION}/code-server_${VERSION}_amd64.deb
               sudo dpkg -i code-server_${VERSION}_amd64.deb
               sudo systemctl enable --now code-server@ubuntu
@@ -257,6 +257,12 @@ Resources:
               sed -i.bak 's/bind-addr: 127.0.0.1:8080/bind-addr: 0.0.0.0:8080/' /home/ubuntu/.config/code-server/config.yaml
               sudo systemctl restart code-server@ubuntu
             - VERSION: !Ref VSCodeServerVersion
+            - LOCAL: !Ref LocalFolder
+            - REPOSITORY_OWNER: !Ref RepositoryOwner
+            - REPOSITORY_NAME: !Ref RepositoryName
+            - REPOSITORY_REF: !Ref RepositoryRef
+            - RESOURCES_PRECREATED: !Ref ResourcesPrecreated
+
 #------------------------------------------------------
 # Exported output
 #------------------------------------------------------ 
