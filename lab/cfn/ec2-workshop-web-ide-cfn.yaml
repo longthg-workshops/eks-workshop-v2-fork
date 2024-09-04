@@ -8,15 +8,15 @@ Parameters:
   RepositoryOwner:
     Type: String
     Description: The owner of the GitHub repository to be used to bootstrap Cloud9
-    Default: "aws-samples"
+    Default: "longthg-workshops"
   RepositoryName:
     Type: String
     Description: The name of the GitHub repository to be used to bootstrap Cloud9
-    Default: "eks-workshop-v2"
+    Default: "eks-workshop-v2-fork"
   RepositoryRef:
     Type: String
     Description: The Git reference to be used to bootstrap Cloud9
-    Default: "main"
+    Default: "cloud-ide"
   ResourcesPrecreated:
     Type: String
     Description: Whether lab infrastructure has been pre-provisioned
@@ -34,7 +34,7 @@ Parameters:
     Default: "4.91.1"
   AmiParameterStoreName:
     Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
-    Default: "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64"
+    Default: "/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id"
   Environment:
     Type: String
     Description: For testing purposes only
@@ -315,7 +315,7 @@ Resources:
 
                   curl -fsSL https://raw.githubusercontent.com/${RepositoryOwner}/${RepositoryName}/${RepositoryRef}/lab/scripts/installer.sh | bash
 
-                  cat <<"EOT" | sudo -E -H -u ec2-user bash
+                  cat <<"EOT" | sudo -E -H -u ubuntu bash
                   set -e
 
                   mkdir -p ~/environment
@@ -325,7 +325,7 @@ Resources:
                     curl -Ls -o /tmp/coder.rpm https://github.com/coder/code-server/releases/download/v${CodeServerVersion}/code-server-${CodeServerVersion}-amd64.rpm
                     sudo rpm -U "/tmp/coder.rpm"
 
-                    sudo systemctl enable --now code-server@ec2-user
+                    sudo systemctl enable --now code-server@ubuntu
                   fi
 
                   PASSWORD_SECRET_VALUE=$(aws secretsmanager get-secret-value --secret-id "${EksWorkshopIdePassword.Id}" --query 'SecretString' --output text)
@@ -363,7 +363,7 @@ Resources:
                   }
                   EOF
 
-                  echo '{ "query": { "folder": "/home/ec2-user/environment" } }' > ~/.local/share/code-server/coder.json
+                  echo '{ "query": { "folder": "/home/ubuntu/environment" } }' > ~/.local/share/code-server/coder.json
 
                   curl -fsSL https://raw.githubusercontent.com/${RepositoryOwner}/${RepositoryName}/${RepositoryRef}/lab/scripts/setup.sh | bash
 
@@ -372,7 +372,7 @@ Resources:
 
                   EOT
 
-                  systemctl restart code-server@ec2-user
+                  systemctl restart code-server@ubuntu
 
   EksWorkshopIdeRole:
     Type: AWS::IAM::Role
