@@ -44,7 +44,7 @@ resource "aws_iam_user_policy_attachment" "gitops_access" {
 
 resource "local_file" "ssh_private_key" {
   content         = tls_private_key.gitops.private_key_pem
-  filename        = "/home/ec2-user/.ssh/gitops_ssh.pem"
+  filename        = "/home/ubuntu/.ssh/gitops_ssh.pem"
   file_permission = "0400"
 }
 
@@ -54,7 +54,7 @@ Host git-codecommit.*.amazonaws.com
   User ${aws_iam_user.gitops.unique_id}
   IdentityFile ${HOME}/.ssh/gitops_ssh.pem
 EOF
-  filename        = "/home/ec2-user/.ssh/config"
+  filename        = "/home/ubuntu/.ssh/config"
   file_permission = "0600"
 }
 

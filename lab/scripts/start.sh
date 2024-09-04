@@ -11,4 +11,4 @@ export ENVIRONMENT=${ENVIRONMENT:-"${HOME}/eks-workshop-aws"}
 
 curl -fsSL https://raw.githubusercontent.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}/${REPOSITORY_REF}/lab/scripts/installer.sh | bash
 
-sudo -E -H -u ec2-user bash -c "curl -fsSL https://raw.githubusercontent.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}/${REPOSITORY_REF}/lab/scripts/setup.sh | bash"
+sudo -E -H -u ubuntu bash -c "curl -fsSL https://raw.githubusercontent.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}/${REPOSITORY_REF}/lab/scripts/setup.sh | bash"
