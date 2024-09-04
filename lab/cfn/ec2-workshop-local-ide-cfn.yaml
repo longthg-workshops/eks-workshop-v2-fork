@@ -257,11 +257,11 @@ Resources:
               sed -i.bak 's/bind-addr: 127.0.0.1:8080/bind-addr: 0.0.0.0:8080/' /home/ubuntu/.config/code-server/config.yaml
               sudo systemctl restart code-server@ubuntu
             - VERSION: !Ref VSCodeServerVersion
-            - LOCAL: !Ref LocalFolder
-            - REPOSITORY_OWNER: !Ref RepositoryOwner
-            - REPOSITORY_NAME: !Ref RepositoryName
-            - REPOSITORY_REF: !Ref RepositoryRef
-            - RESOURCES_PRECREATED: !Ref ResourcesPrecreated
+              LOCAL: !Ref LocalFolder
+              REPOSITORY_OWNER: !Ref RepositoryOwner
+              REPOSITORY_NAME: !Ref RepositoryName
+              REPOSITORY_REF: !Ref RepositoryRef
+              RESOURCES_PRECREATED: !Ref ResourcesPrecreated
 
 #------------------------------------------------------
 # Exported output
