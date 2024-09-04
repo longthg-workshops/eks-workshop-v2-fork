@@ -40,41 +40,6 @@ Parameters:
     Description: For testing purposes only
     Default: ""
 
-Mappings:
-  PrefixListID:
-    ap-northeast-1:
-      PrefixList: pl-58a04531
-    ap-northeast-2:
-      PrefixList: pl-22a6434b
-    ap-south-1:
-      PrefixList: pl-9aa247f3
-    ap-southeast-1:
-      PrefixList: pl-31a34658
-    ap-southeast-2:
-      PrefixList: pl-b8a742d1
-    ca-central-1:
-      PrefixList: pl-38a64351
-    eu-central-1:
-      PrefixList: pl-a3a144ca
-    eu-north-1:
-      PrefixList: pl-fab65393
-    eu-west-1:
-      PrefixList: pl-4fa04526
-    eu-west-2:
-      PrefixList: pl-93a247fa
-    eu-west-3:
-      PrefixList: pl-75b1541c
-    sa-east-1:
-      PrefixList: pl-5da64334
-    us-east-1:
-      PrefixList: pl-3b927c52
-    us-east-2:
-      PrefixList: pl-b6a144df
-    us-west-1:
-      PrefixList: pl-4ea04527
-    us-west-2:
-      PrefixList: pl-82a045eb
-
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -124,12 +89,11 @@ Resources:
     Properties:
       GroupDescription: SG for IDE
       SecurityGroupIngress:
-        - Description: Allow HTTP from CloudFront
+        - Description: Allow SSH from anywhere
           IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          SourcePrefixListId:
-            !FindInMap [PrefixListID, !Ref "AWS::Region", PrefixList]
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
       SecurityGroupEgress:
         - Description: Allow all outbound traffic
           IpProtocol: -1
@@ -279,134 +243,41 @@ Resources:
             inputs:
               runCommand:
                 - !Sub |
-                  set -e
-
-                  yum install -y git tar gzip vim nodejs npm make gcc g++
-
-                  export environment="${Environment}"
-
-                  source <(curl -fsSL https://raw.githubusercontent.com/${RepositoryOwner}/${RepositoryName}/${RepositoryRef}/hack/lib/common-env.sh)
-
-                  dnf copr enable -y @caddy/caddy epel-9-x86_64
-                  dnf install -y caddy
-                  systemctl enable --now caddy
-
-                  tee /etc/caddy/Caddyfile <<EOF
-                  http://${EksWorkshopIdeCloudFrontDistribution.DomainName} {
-                    reverse_proxy 127.0.0.1:8889
-                  }
-                  EOF
-
-                  systemctl restart caddy
-
-                  tee /etc/profile.d/custom_prompt.sh <<EOF
-                  #!/bin/sh
-
-                  export PROMPT_COMMAND='export PS1="\u:\w:$ "'
-                  EOF
-
-                  export AWS_REGION="${AWS::Region}"
-                  export REPOSITORY_OWNER="${RepositoryOwner}"
-                  export REPOSITORY_NAME="${RepositoryName}"
-                  export REPOSITORY_REF="${RepositoryRef}"
-                  export CLOUD9_ENVIRONMENT_ID="${EksWorkshopIdeInstance}"
-                  export RESOURCES_PRECREATED="${ResourcesPrecreated}"
-                  export ANALYTICS_ENDPOINT="${AnalyticsEndpoint}"
-
+                  #!/bin/bash
+                  AWS_REGION="${AWS::Region}"
                   curl -fsSL https://raw.githubusercontent.com/${RepositoryOwner}/${RepositoryName}/${RepositoryRef}/lab/scripts/installer.sh | bash
+                  sudo -E -H -u ubuntu bash -c "curl -fsSL https://raw.githubusercontent.com/${RepositoryOwner}/${RepositoryName}/${RepositoryRef}/lab/scripts/setup.sh | bash"
+                  curl -fOL https://github.com/coder/code-server/releases/download/v${CodeServerVersion}/code-server_${CodeServerVersion}_amd64.deb
+                  sudo dpkg -i code-server_${CodeServerVersion}_amd64.deb
+                  sudo systemctl enable --now code-server@ubuntu
+                  sleep 30
+                  sed -i.bak 's/auth: password/auth: none/' /home/ubuntu/.config/code-server/config.yaml
+                  sudo systemctl restart code-server@ubuntu
+                - ENVIRONMENT: !Ref LocalFolder
+                  REPOSITORY_OWNER: !Ref RepositoryOwner
+                  REPOSITORY_NAME: !Ref RepositoryName
+                  REPOSITORY_REF: !Ref RepositoryRef
+                  RESOURCES_PRECREATED: !Ref ResourcesPrecreated
 
-                  cat <<"EOT" | sudo -E -H -u ubuntu bash
-                  set -e
-
-                  mkdir -p ~/environment
-
-                  codeServer=$(dnf list installed code-server | wc -l)
-                  if [ "$codeServer" -eq "0" ]; then
-                    curl -Ls -o /tmp/coder.rpm https://github.com/coder/code-server/releases/download/v${CodeServerVersion}/code-server-${CodeServerVersion}-amd64.rpm
-                    sudo rpm -U "/tmp/coder.rpm"
-
-                    sudo systemctl enable --now code-server@ubuntu
-                  fi
-
-                  PASSWORD_SECRET_VALUE=$(aws secretsmanager get-secret-value --secret-id "${EksWorkshopIdePassword.Id}" --query 'SecretString' --output text)
-                  IDE_PASSWORD=$(echo "$PASSWORD_SECRET_VALUE" | jq -r '.password')
-                  HASHED_PASSWORD=$(echo -n "$IDE_PASSWORD" | npx argon2-cli -e)
-
-                  mkdir -p ~/.config/code-server
-                  touch ~/.config/code-server/config.yaml
-                  tee ~/.config/code-server/config.yaml <<EOF
-                  cert: false
-                  auth: password
-                  hashed-password: "$HASHED_PASSWORD"
-                  bind-addr: 127.0.0.1:8889
-                  EOF
-
-                  mkdir -p ~/.local/share/code-server/User
-                  touch ~/.local/share/code-server/User/settings.json
-                  tee ~/.local/share/code-server/User/settings.json <<EOF
-                  {
-                    "extensions.autoUpdate": false,
-                    "extensions.autoCheckUpdates": false,
-                    "security.workspace.trust.enabled": false,
-                    "task.allowAutomaticTasks": "on",
-                    "telemetry.telemetryLevel": "off",
-                    "workbench.startupEditor": "terminal"
-                  }
-                  EOF
-
-                  mkdir -p ~/environment/.vscode
-                  tee ~/environment/.vscode/settings.json <<EOF
-                  {
-                    "files.exclude": {
-                      "**/.*": true
-                    }
-                  }
-                  EOF
-
-                  echo '{ "query": { "folder": "/home/ubuntu/environment" } }' > ~/.local/share/code-server/coder.json
-
-                  curl -fsSL https://raw.githubusercontent.com/${RepositoryOwner}/${RepositoryName}/${RepositoryRef}/lab/scripts/setup.sh | bash
-
-                  code-server --install-extension ms-kubernetes-tools.vscode-kubernetes-tools --force
-                  code-server --install-extension redhat.vscode-yaml --force
-
-                  EOT
-
-                  systemctl restart code-server@ubuntu
-
-  EksWorkshopIdeRole:
+  EKSVSCodeServerIAMRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
-          - Effect: Allow
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
             Principal:
               Service:
                 - ec2.amazonaws.com
-                - ssm.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: ide-password
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - secretsmanager:GetResourcePolicy
-                  - secretsmanager:GetSecretValue
-                  - secretsmanager:DescribeSecret
-                  - secretsmanager:ListSecretVersionIds
-                Resource:
-                  - !Ref EksWorkshopIdePassword
-              - Effect: Allow
-                Action: secretsmanager:ListSecrets
-                Resource: "*"
-
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
-      Path: "/"
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - Ref: EKSVSCodeServerIAMRole
 
   EksWorkshopIamPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -484,95 +355,6 @@ Resources:
         - Key: type
           Value: eksworkshop-ide
 
-  EksWorkshopIdePassword:
-    Type: AWS::SecretsManager::Secret
-    Properties:
-      Name: !Sub ${AWS::StackName}-password
-      GenerateSecretString:
-        ExcludeCharacters: "\"@/\\"
-        ExcludePunctuation: true
-        GenerateStringKey: password
-        IncludeSpace: false
-        PasswordLength: 32
-        SecretStringTemplate: '{"password":""}'
-    UpdateReplacePolicy: Delete
-    DeletionPolicy: Delete
-
-  EksWorkshopIdeCachePolicy:
-    Type: AWS::CloudFront::CachePolicy
-    Properties:
-      CachePolicyConfig:
-        DefaultTTL: 86400
-        MaxTTL: 31536000
-        MinTTL: 1
-        Name: !Ref AWS::StackName
-        ParametersInCacheKeyAndForwardedToOrigin:
-          CookiesConfig:
-            CookieBehavior: all
-          EnableAcceptEncodingGzip: False
-          HeadersConfig:
-            HeaderBehavior: whitelist
-            Headers:
-              - Accept-Charset
-              - Authorization
-              - Origin
-              - Accept
-              - Referer
-              - Host
-              - Accept-Language
-              - Accept-Encoding
-              - Accept-Datetime
-          QueryStringsConfig:
-            QueryStringBehavior: all
-
-  EksWorkshopIdeCloudFrontDistribution:
-    Type: AWS::CloudFront::Distribution
-    Properties:
-      DistributionConfig:
-        Enabled: True
-        HttpVersion: http2
-        CacheBehaviors:
-          - AllowedMethods:
-              - GET
-              - HEAD
-              - OPTIONS
-              - PUT
-              - PATCH
-              - POST
-              - DELETE
-            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
-            Compress: False
-            OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
-            TargetOriginId: !Sub CloudFront-${AWS::StackName}
-            ViewerProtocolPolicy: allow-all
-            PathPattern: "/proxy/*"
-        DefaultCacheBehavior:
-          AllowedMethods:
-            - GET
-            - HEAD
-            - OPTIONS
-            - PUT
-            - PATCH
-            - POST
-            - DELETE
-          CachePolicyId: !Ref EksWorkshopIdeCachePolicy
-          OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
-          TargetOriginId: !Sub CloudFront-${AWS::StackName}
-          ViewerProtocolPolicy: allow-all
-        Origins:
-          - DomainName: !GetAtt EksWorkshopIdeInstance.PublicDnsName
-            Id: !Sub CloudFront-${AWS::StackName}
-            CustomOriginConfig:
-              OriginProtocolPolicy: http-only
-
 Outputs:
-  IdeUrl:
-    Value: !Sub https://${EksWorkshopIdeCloudFrontDistribution.DomainName}
-
-  IdePasswordSecret:
-    Value: !Sub
-      - https://console.aws.amazon.com/secretsmanager/secret?name=${SecretName}
-      - SecretName: !Sub ${AWS::StackName}-password
-
   IdeRole:
-    Value: !Sub ${EksWorkshopIdeRole.Arn}
+    Value: !Sub ${EKSVSCodeServerIAMRole.Arn}
