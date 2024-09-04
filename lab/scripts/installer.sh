@@ -136,7 +136,7 @@ sudo mv ./ec2-instance-selector /usr/local/bin/ec2-instance-selector
 
 REPOSITORY_OWNER=${REPOSITORY_OWNER:-"longthg-workshops"}
 REPOSITORY_NAME=${REPOSITORY_NAME:-"eks-workshop-v2-fork"}
-REPOSITORY_REF=${REPOSITORY_REF:-"cloud-ide"}
+REPOSITORY_REF=${REPOSITORY_REF:-"ubuntu"}
 
 if [ ! -z "$REPOSITORY_REF" ]; then
   sudo cat << EOT > /usr/local/bin/reset-environment
