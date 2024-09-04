@@ -242,11 +242,6 @@ Resources:
             - |
               #!/bin/bash
               AWS_REGION="${AWS::Region}"
-              REPOSITORY_OWNER="${REPO_OWNER}"
-              REPOSITORY_NAME="${REPO_NAME}"
-              REPOSITORY_REF="${REPO_REF}"
-              RESOURCES_PRECREATED="${RES_PRECREATED}"
-              ENVIRONMENT=${LOCAL}
               curl -fsSL https://raw.githubusercontent.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}/${REPOSITORY_REF}/lab/scripts/installer.sh | bash
               sudo -E -H -u ubuntu bash -c "curl -fsSL https://raw.githubusercontent.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}/${REPOSITORY_REF}/lab/scripts/setup.sh | bash"
               curl -fOL https://github.com/coder/code-server/releases/download/v${VERSION}/code-server_${VERSION}_amd64.deb
@@ -256,11 +251,11 @@ Resources:
               sed -i.bak 's/auth: password/auth: none/' /home/ubuntu/.config/code-server/config.yaml
               sudo systemctl restart code-server@ubuntu
             - VERSION: !Ref VSCodeServerVersion
-              LOCAL: !Ref LocalFolder
-              REPO_OWNER: !Ref RepositoryOwner
-              REPO_NAME: !Ref RepositoryName
-              REPO_REF: !Ref RepositoryRef
-              RES_PRECREATED: !Ref ResourcesPrecreated
+              ENVIRONMENT: !Ref LocalFolder
+              REPOSITORY_OWNER: !Ref RepositoryOwner
+              REPOSITORY_NAME: !Ref RepositoryName
+              REPOSITORY_REF: !Ref RepositoryRef
+              RESOURCES_PRECREATED: !Ref ResourcesPrecreated
 
 #------------------------------------------------------
 # Exported output
