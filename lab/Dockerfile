@@ -1,11 +1,11 @@
-FROM public.ecr.aws/amazonlinux/amazonlinux:2
+FROM ubuntu:22.04
 
-RUN yum install -y shadow-utils && useradd \
-    --home "/home/ec2-user" \
+RUN apt install -y shadow-utils && useradd \
+    --home "/home/ubuntu" \
     --create-home \
     --user-group \
     --shell /bin/bash \
-    ec2-user
+    ubuntu
 
 ADD scripts/installer.sh /tmp/installer.sh
 
@@ -15,14 +15,14 @@ ADD scripts/entrypoint.sh /entrypoint.sh
 
 COPY --chmod=755 bin/* /usr/local/bin
 
-RUN mkdir -p /eks-workshop && chown ec2-user /eks-workshop
+RUN mkdir -p /eks-workshop && chown ubuntu /eks-workshop
 
-USER ec2-user
+USER ubuntu
 
 COPY --chmod=755 scripts/setup.sh /tmp/setup.sh
 
-RUN mkdir -p ${HOME}/environment
+RUN mkdir -p /home/ubuntu/environment
 
-WORKDIR /home/ec2-user/environment
+WORKDIR /home/ubuntu/environment
 
 ENTRYPOINT ["bash", "/entrypoint.sh"]
